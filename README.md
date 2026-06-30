@@ -1,6 +1,6 @@
 # Timetable Studio
 
-A clean monochrome timetable builder for courses, labs, tutorials, practicals, work blocks, and weekly planning.
+A clean monochrome timetable builder for courses, labs, tutorials, practicals, work blocks and weekly planning.
 
 ## Features
 
@@ -24,15 +24,7 @@ The app uses Poppins from Google Fonts, with system fallbacks. No font files are
 
 ## Usage
 
-Open `index.html` in a browser. No build step required.
-
-## Deploying with GitHub Pages
-
-1. Create a new GitHub repo.
-2. Upload `index.html` and `README.md`.
-3. Go to **Settings → Pages**.
-4. Set the source to the main branch.
-5. Open the published GitHub Pages link.
+Go to this link: https://bedzeppelin.github.io/timetable-builder
 
 ## Notes
 

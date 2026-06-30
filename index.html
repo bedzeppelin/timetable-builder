@@ -802,6 +802,135 @@ li{margin:3px 0}
   background:#fafafa;
 }
 
+
+/* Visibility states, accordions, undo/redo, and context menus */
+.undoRedo{
+  display:flex;
+  gap:8px;
+}
+.undoRedo button{
+  min-width:82px;
+}
+.visibilitySelect{
+  width:auto;
+  min-width:96px;
+  margin:0;
+  padding:7px 9px;
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:850;
+}
+.courseCard{
+  overflow:hidden;
+}
+.courseCard summary{
+  list-style:none;
+  cursor:pointer;
+}
+.courseCard summary::-webkit-details-marker{
+  display:none;
+}
+.courseCard summary .courseTop{
+  align-items:center;
+}
+.courseChevron{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.72rem;
+  transition:transform .16s var(--ease), background .16s var(--ease);
+}
+.courseCard[open] .courseChevron{
+  transform:rotate(90deg);
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+.courseAccordionBody{
+  padding-top:10px;
+  border-top:1px solid var(--line);
+  margin-top:10px;
+}
+.courseCard.hiddenCourse{
+  opacity:.48;
+}
+.courseCard.shadowCourse{
+  opacity:.76;
+}
+.visibilityBadge{
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:3px 7px;
+  border:1px solid var(--line);
+  font-size:.64rem;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+  margin-left:4px;
+  background:#fff;
+}
+.visibilityBadge.visible{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+.visibilityBadge.shadow{
+  border-style:dashed;
+  color:#666;
+}
+.visibilityBadge.hidden{
+  background:#f2f2ef;
+  color:#999;
+}
+.contextMenu{
+  position:fixed;
+  z-index:100;
+  min-width:210px;
+  display:none;
+  padding:7px;
+  border-radius:16px;
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line-strong);
+  box-shadow:0 20px 70px rgba(0,0,0,.20);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.contextMenu button{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border:0;
+  background:transparent;
+  color:#111;
+  box-shadow:none;
+  border-radius:11px;
+  padding:9px 10px;
+  font-size:.80rem;
+  text-align:left;
+}
+.contextMenu button:hover{
+  transform:none;
+  background:#111;
+  color:#fff;
+  box-shadow:none;
+}
+.contextMenu hr{
+  border:0;
+  border-top:1px solid var(--line);
+  margin:6px 4px;
+}
+.contextHint{
+  color:var(--muted);
+  font-size:.72rem;
+  margin-top:6px;
+}
+
 @media (max-width:1030px){
   .app{grid-template-columns:1fr}
   .sidebar{position:relative;max-height:none}
@@ -838,6 +967,8 @@ li{margin:3px 0}
       <div class="actions">
         <button onclick="openNewCourse()">+ Add course</button>
         <button class="secondary" onclick="openNewMeeting(null, 'Lecture')">+ Add time</button>
+        <button class="ghost" id="undoBtn" onclick="undoAction()" disabled>Undo</button>
+        <button class="ghost" id="redoBtn" onclick="redoAction()" disabled>Redo</button>
         <button class="ghost" onclick="renameTimetable()">Rename tab</button>
         <button class="ghost" onclick="duplicateTimetable()">Duplicate tab</button>
         <button class="ghost" onclick="exportSchedule()">Export JSON</button>
@@ -894,7 +1025,7 @@ li{margin:3px 0}
 
       <label class="checkboxLine">
         <input type="checkbox" id="showShadows" onchange="updateSettings()" checked>
-        Show disabled courses as shadows
+        Show shadow courses/options
       </label>
 
       <div>
@@ -908,7 +1039,8 @@ li{margin:3px 0}
           <label style="margin:0;">Course bank / shadows</label>
           <div class="bankButtons">
             <button class="secondary smallBtn" onclick="enableAllCourses()">Enable all</button>
-            <button class="secondary smallBtn" onclick="disableAllCourses()">Disable all</button>
+            <button class="secondary smallBtn" onclick="disableAllCourses()">Shadow all</button>
+            <button class="secondary smallBtn" onclick="hideAllCourses()">Hide all</button>
           </div>
         </div>
         <div id="courseBank" class="courseBank"></div>
@@ -916,7 +1048,7 @@ li{margin:3px 0}
 
       <div class="small">
         <b>How course toggles work:</b><br>
-        A course can contain lecture, tutorial, and practical blocks. Turning the course off disables all of them together. If a course has multiple tutorial/practical options, unselected options appear as shadows and do not count toward conflicts, busy hours, or free days.
+        A course can be visible, shadowed, or hidden. Visible courses count in the schedule; shadow courses show faintly but do not count; hidden courses disappear entirely. Multiple tutorial/practical options stay tucked inside each course accordion.
       </div>
 
       <div class="legend">
@@ -975,9 +1107,12 @@ li{margin:3px 0}
       <label>Color picker
         <input id="cColorPicker" type="color" value="#dbeafe" />
       </label>
-      <label class="checkboxLine wide">
-        <input type="checkbox" id="cEnabled" checked>
-        Enabled on timetable
+      <label class="wide">Course visibility
+        <select id="cVisibility">
+          <option value="visible">Visible / counts in schedule</option>
+          <option value="shadow">Shadow / visible but does not count</option>
+          <option value="hidden">Hidden entirely</option>
+        </select>
       </label>
     </div>
     <div class="modalActions">
@@ -1094,6 +1229,9 @@ li{margin:3px 0}
   </div>
 </div>
 
+
+<div class="contextMenu" id="contextMenu"></div>
+
 <script>
 const ALL_DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 const DEFAULT_COLORS = ["#dbeafe","#dcfce7","#fef3c7","#fae8ff","#ffedd5","#e0e7ff","#ccfbf1","#fee2e2","#e7e5e4","#f5f5f4"];
@@ -1130,6 +1268,11 @@ let mode = null;
 let dragData = null;
 let editingCourseId = null;
 let editingMeeting = null;
+let isRestoringHistory = false;
+let historyPast = [];
+let historyFuture = [];
+let lastPersistJson = JSON.stringify(state);
+let contextTarget = null;
 
 const grid = document.getElementById("calendarGrid");
 const eventLayer = document.getElementById("eventLayer");
@@ -1146,8 +1289,53 @@ function current(){
   return t;
 }
 
-function persist(){
-  localStorage.setItem("multiTimetableState", JSON.stringify(state));
+function persist(options={}){
+  const json = JSON.stringify(state);
+  const shouldTrack = options.history !== false && !isRestoringHistory && !mode && json !== lastPersistJson;
+  if(shouldTrack){
+    historyPast.push(lastPersistJson);
+    if(historyPast.length > 100) historyPast.shift();
+    historyFuture = [];
+    lastPersistJson = json;
+  }else if(!isRestoringHistory && json !== lastPersistJson && options.history === false){
+    // Keep local storage fresh during drag without adding tiny drag steps to undo history.
+  }else if(!isRestoringHistory && json !== lastPersistJson && !mode){
+    lastPersistJson = json;
+  }
+  localStorage.setItem("multiTimetableState", json);
+  updateUndoRedoButtons();
+}
+function updateUndoRedoButtons(){
+  const undo = document.getElementById("undoBtn");
+  const redo = document.getElementById("redoBtn");
+  if(undo) undo.disabled = historyPast.length === 0;
+  if(redo) redo.disabled = historyFuture.length === 0;
+}
+function restoreStateFromJson(json){
+  isRestoringHistory = true;
+  state = JSON.parse(json);
+  if(!state.activeTimetableId || !state.timetables.some(t => t.id === state.activeTimetableId)){
+    state.activeTimetableId = state.timetables[0]?.id;
+  }
+  lastPersistJson = JSON.stringify(state);
+  localStorage.setItem("multiTimetableState", lastPersistJson);
+  render();
+  isRestoringHistory = false;
+  updateUndoRedoButtons();
+}
+function undoAction(){
+  if(!historyPast.length) return;
+  const currentJson = JSON.stringify(state);
+  historyFuture.push(currentJson);
+  const previous = historyPast.pop();
+  restoreStateFromJson(previous);
+}
+function redoAction(){
+  if(!historyFuture.length) return;
+  const currentJson = JSON.stringify(state);
+  historyPast.push(currentJson);
+  const next = historyFuture.pop();
+  restoreStateFromJson(next);
 }
 
 function pad(n){ return String(n).padStart(2,"0"); }
@@ -1187,8 +1375,22 @@ function colorForIndex(i){ return DEFAULT_COLORS[i % DEFAULT_COLORS.length]; }
 function meetingSelected(meeting){
   return meeting.selected !== false;
 }
+function courseVisibility(course){
+  if(course.visibility) return course.visibility;
+  return course.enabled === false ? "shadow" : "visible";
+}
+function setCourseVisibility(course, visibility){
+  course.visibility = visibility;
+  course.enabled = visibility === "visible";
+}
+function courseIsActive(course){
+  return courseVisibility(course) === "visible";
+}
+function courseIsHidden(course){
+  return courseVisibility(course) === "hidden";
+}
 function meetingActive(course, meeting){
-  return !!course.enabled && meetingSelected(meeting);
+  return courseIsActive(course) && meetingSelected(meeting);
 }
 function optionGroupKey(meeting){
   return `${componentName(meeting.type)}::${meeting.section || meeting.id}`;
@@ -1197,6 +1399,7 @@ function allMeetings(includeShadows=false){
   const t = current();
   const out = [];
   t.courses.forEach(course => {
+    if(courseIsHidden(course)) return;
     (course.meetings || []).forEach(meeting => {
       if(!includeShadows && !meetingActive(course, meeting)) return;
       out.push({
@@ -1204,7 +1407,8 @@ function allMeetings(includeShadows=false){
         courseId:course.id,
         courseTitle:course.title,
         color:course.color,
-        courseEnabled:course.enabled,
+        courseEnabled:courseIsActive(course),
+        courseVisibility:courseVisibility(course),
         meetingSelected:meetingSelected(meeting),
         active:meetingActive(course, meeting)
       });
@@ -1228,6 +1432,14 @@ function renderTabs(){
       persist();
       render();
     };
+    btn.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, [
+        {label:"Rename tab", action:() => { state.activeTimetableId = t.id; renameTimetable(); }},
+        {label:"Duplicate tab", action:() => { state.activeTimetableId = t.id; duplicateTimetable(); }},
+        {label:"Delete tab", action:() => { state.activeTimetableId = t.id; deleteTimetable(); }}
+      ]);
+    });
     tabs.appendChild(btn);
   });
   const add = document.createElement("button");
@@ -1418,7 +1630,7 @@ function startMove(e, courseId, meetingId){
   if(e.button !== undefined && e.button !== 0) return;
   e.stopPropagation();
   const found = findMeeting(courseId, meetingId);
-  if(!found.course.enabled || !meetingSelected(found.meeting)) return;
+  if(!courseIsActive(found.course) || !meetingSelected(found.meeting)) return;
   const pos = pointerToDayMinute(e);
   mode = "move";
   dragData = {
@@ -1435,7 +1647,7 @@ function startResize(e, courseId, meetingId){
   if(e.button !== undefined && e.button !== 0) return;
   e.stopPropagation();
   const found = findMeeting(courseId, meetingId);
-  if(!found.course.enabled || !meetingSelected(found.meeting)) return;
+  if(!courseIsActive(found.course) || !meetingSelected(found.meeting)) return;
   mode = "resize";
   dragData = {courseId, meetingId, start:timeToMin(found.meeting.start)};
   window.addEventListener("pointermove", onPointerMove);
@@ -1462,7 +1674,7 @@ function onPointerMove(e){
     found.meeting.day = pos.day;
     found.meeting.start = minToTime(newStart);
     found.meeting.end = minToTime(newStart + dragData.duration);
-    persist();
+    persist({history:false});
     renderEvents();
     renderMetrics();
     renderCourseBank();
@@ -1472,7 +1684,7 @@ function onPointerMove(e){
     let newEnd = Math.max(dragData.start + t.snap, pos.minute);
     newEnd = Math.min(t.endHour*60, newEnd);
     found.meeting.end = minToTime(newEnd);
-    persist();
+    persist({history:false});
     renderEvents();
     renderMetrics();
     renderCourseBank();
@@ -1480,6 +1692,7 @@ function onPointerMove(e){
 }
 
 function onPointerUp(e){
+  const endedMode = mode;
   selectionLayer.innerHTML = "";
   window.removeEventListener("pointermove", onPointerMove);
   if(mode === "create" && dragData){
@@ -1490,6 +1703,7 @@ function onPointerUp(e){
       title,
       color,
       enabled:true,
+      visibility:"visible",
       meetings:[{
         id:uid("meet"),
         day:dragData.day,
@@ -1509,6 +1723,10 @@ function onPointerUp(e){
   }
   mode = null;
   dragData = null;
+  if(endedMode === "move" || endedMode === "resize"){
+    persist();
+    render();
+  }
 }
 
 function renderSelection(){
@@ -1584,7 +1802,7 @@ function renderEvents(){
 
   const meetings = allMeetings(true).filter(m => activeDays.includes(m.day));
   meetings.forEach(m => {
-    const isShadow = !m.courseEnabled || !m.meetingSelected;
+    const isShadow = m.courseVisibility === "shadow" || !m.meetingSelected;
     if(isShadow && !t.showShadows) return;
     const dayIdx = dayIndex(m.day);
     const start = timeToMin(m.start);
@@ -1607,18 +1825,22 @@ function renderEvents(){
       <div class="eventTitle">${escapeHtml(m.courseTitle || "Untitled")}</div>
       <div class="eventMeta">${m.start}–${m.end}${m.location ? " · " + escapeHtml(m.location) : ""}</div>
       <div class="eventMeta">${escapeHtml(componentText(m))}</div>
-      ${isShadow ? `<div class="eventMeta"><b>${!m.courseEnabled ? "course disabled" : "option shadow · click to select"}</b></div>` : ""}
+      ${isShadow ? `<div class="eventMeta"><b>${m.courseVisibility === "shadow" ? "course shadow" : "option shadow · click to select"}</b></div>` : ""}
       <div class="resizeHandle" title="Drag to resize"></div>
     `;
     block.addEventListener("pointerdown", e => startMove(e, m.courseId, m.id));
     block.addEventListener("click", e => {
       e.stopPropagation();
       if(mode) return;
-      if(m.courseEnabled && !m.meetingSelected){
+      if(m.courseVisibility === "visible" && !m.meetingSelected){
         selectMeetingOption(m.courseId, m.id);
         return;
       }
       openMeetingModal(m.courseId, m.id);
+    });
+    block.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      showMeetingContextMenu(e.clientX, e.clientY, m.courseId, m.id);
     });
     block.querySelector(".resizeHandle").addEventListener("pointerdown", e => startResize(e, m.courseId, m.id));
     eventLayer.appendChild(block);
@@ -1627,8 +1849,8 @@ function renderEvents(){
 
 function renderMetrics(){
   const t = current();
-  const enabledCourses = t.courses.filter(c => c.enabled && (c.meetings || []).length);
-  const shadowCourses = t.courses.filter(c => !c.enabled && (c.meetings || []).length);
+  const enabledCourses = t.courses.filter(c => courseVisibility(c) === "visible" && (c.meetings || []).length);
+  const shadowCourses = t.courses.filter(c => courseVisibility(c) === "shadow" && (c.meetings || []).length);
   const meetings = enabledMeetings();
   const conflicts = getConflicts();
   const busy = meetings.reduce((sum,e) => sum + Math.max(0, timeToMin(e.end) - timeToMin(e.start)) / 60, 0);
@@ -1666,8 +1888,10 @@ function renderCourseBank(){
     return;
   }
   t.courses.forEach(course => {
-    const card = document.createElement("div");
-    card.className = "courseCard " + (!course.enabled ? "disabled" : "");
+    const vis = courseVisibility(course);
+    const details = document.createElement("details");
+    details.className = "courseCard " + (vis === "hidden" ? "hiddenCourse" : vis === "shadow" ? "shadowCourse" : "");
+    details.open = course.open === true;
     const meetings = course.meetings || [];
     const grouped = ["Lecture","Tutorial","Practical","Other"].map(kind => {
       const items = meetings.filter(m => componentName(m.type) === kind || (kind === "Other" && !["Lecture","Tutorial","Practical"].includes(componentName(m.type))));
@@ -1683,41 +1907,61 @@ function renderCourseBank(){
     }).filter(Boolean).join("");
 
     const selectedCount = meetings.filter(m => meetingSelected(m)).length;
-    card.innerHTML = `
-      <div class="courseTop">
-        <input class="courseToggle" type="checkbox" ${course.enabled ? "checked" : ""} title="Enable/disable this course and all lecture/tutorial/practical blocks">
-        <div>
-          <div class="courseName">${escapeHtml(course.title || "Untitled")}</div>
-          <div class="courseMeta">${course.color || "#dbeafe"} · ${selectedCount}/${meetings.length} active block${meetings.length === 1 ? "" : "s"} · one course toggle controls all</div>
-          <div class="componentSummary">${grouped || `<span class="courseMeta">No lecture/tutorial/practical times yet</span>`}</div>
+    details.innerHTML = `
+      <summary>
+        <div class="courseTop">
+          <span class="courseChevron">›</span>
+          <div>
+            <div class="courseName">${escapeHtml(course.title || "Untitled")} <span class="visibilityBadge ${vis}">${vis}</span></div>
+            <div class="courseMeta">${course.color || "#dbeafe"} · ${selectedCount}/${meetings.length} active block${meetings.length === 1 ? "" : "s"}</div>
+          </div>
+          <div class="swatch" style="background:${course.color || "#dbeafe"}"></div>
         </div>
-        <div class="swatch" style="background:${course.color || "#dbeafe"}"></div>
-      </div>
-      <div class="courseButtons">
-        <button class="secondary smallBtn editCourse">Edit course</button>
-        <button class="secondary smallBtn addLecture">+ Lecture</button>
-        <button class="secondary smallBtn addTutorial">+ Tutorial</button>
-        <button class="secondary smallBtn addPractical">+ Practical</button>
-        <button class="ghost smallBtn duplicateCourse">Duplicate</button>
+      </summary>
+      <div class="courseAccordionBody">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;flex-wrap:wrap;">
+          <label style="margin:0;">Visibility</label>
+          <select class="visibilitySelect" data-course="${course.id}">
+            <option value="visible" ${vis === "visible" ? "selected" : ""}>Visible</option>
+            <option value="shadow" ${vis === "shadow" ? "selected" : ""}>Shadow</option>
+            <option value="hidden" ${vis === "hidden" ? "selected" : ""}>Hidden</option>
+          </select>
+        </div>
+        <div class="componentSummary">${grouped || `<span class="courseMeta">No lecture/tutorial/practical times yet</span>`}</div>
+        <div class="courseButtons">
+          <button class="secondary smallBtn editCourse">Edit course</button>
+          <button class="secondary smallBtn addLecture">+ Lecture</button>
+          <button class="secondary smallBtn addTutorial">+ Tutorial</button>
+          <button class="secondary smallBtn addPractical">+ Practical</button>
+          <button class="ghost smallBtn duplicateCourse">Duplicate</button>
+        </div>
       </div>
     `;
-    card.querySelector(".courseToggle").addEventListener("change", e => {
-      course.enabled = e.target.checked;
+    details.addEventListener("toggle", () => {
+      course.open = details.open;
+      persist({history:false});
+    });
+    details.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      showCourseContextMenu(e.clientX, e.clientY, course.id);
+    });
+    details.querySelector(".visibilitySelect").addEventListener("change", e => {
+      setCourseVisibility(course, e.target.value);
       persist();
       render();
     });
-    card.querySelector(".editCourse").addEventListener("click", () => openCourseModal(course.id));
-    card.querySelector(".addLecture").addEventListener("click", () => openNewMeeting(course.id, "Lecture"));
-    card.querySelector(".addTutorial").addEventListener("click", () => openNewMeeting(course.id, "Tutorial"));
-    card.querySelector(".addPractical").addEventListener("click", () => openNewMeeting(course.id, "Practical"));
-    card.querySelector(".duplicateCourse").addEventListener("click", () => duplicateCourse(course.id));
-    card.querySelectorAll(".optionSelect").forEach(btn => {
+    details.querySelector(".editCourse").addEventListener("click", () => openCourseModal(course.id));
+    details.querySelector(".addLecture").addEventListener("click", () => openNewMeeting(course.id, "Lecture"));
+    details.querySelector(".addTutorial").addEventListener("click", () => openNewMeeting(course.id, "Tutorial"));
+    details.querySelector(".addPractical").addEventListener("click", () => openNewMeeting(course.id, "Practical"));
+    details.querySelector(".duplicateCourse").addEventListener("click", () => duplicateCourse(course.id));
+    details.querySelectorAll(".optionSelect").forEach(btn => {
       btn.addEventListener("click", e => {
         e.stopPropagation();
         selectMeetingOption(btn.dataset.course, btn.dataset.meeting);
       });
     });
-    bank.appendChild(card);
+    bank.appendChild(details);
   });
 }
 
@@ -1736,13 +1980,19 @@ function selectMeetingOption(courseId, meetingId){
 }
 
 function enableAllCourses(){
-  current().courses.forEach(c => c.enabled = true);
+  current().courses.forEach(c => setCourseVisibility(c, "visible"));
   persist();
   render();
 }
 
 function disableAllCourses(){
-  current().courses.forEach(c => c.enabled = false);
+  current().courses.forEach(c => setCourseVisibility(c, "shadow"));
+  persist();
+  render();
+}
+
+function hideAllCourses(){
+  current().courses.forEach(c => setCourseVisibility(c, "hidden"));
   persist();
   render();
 }
@@ -1754,6 +2004,7 @@ function openNewCourse(){
     title:"New course",
     color:colorForIndex(t.courses.length),
     enabled:true,
+    visibility:"visible",
     meetings:[]
   };
   t.courses.push(course);
@@ -1770,7 +2021,7 @@ function openCourseModal(courseId, isNew=false){
   document.getElementById("cTitle").value = course.title || "";
   document.getElementById("cColorHex").value = course.color || "#dbeafe";
   document.getElementById("cColorPicker").value = safeHex(course.color);
-  document.getElementById("cEnabled").checked = !!course.enabled;
+  document.getElementById("cVisibility").value = courseVisibility(course);
   document.getElementById("deleteCourseBtn").style.display = "inline-block";
   document.getElementById("courseModalOverlay").style.display = "flex";
   setTimeout(() => document.getElementById("cTitle").select(), 30);
@@ -1798,7 +2049,7 @@ function saveCourse(){
   }
   course.title = document.getElementById("cTitle").value.trim() || "Untitled";
   course.color = hex.toLowerCase();
-  course.enabled = document.getElementById("cEnabled").checked;
+  setCourseVisibility(course, document.getElementById("cVisibility").value);
   persist();
   closeCourseModal();
   render();
@@ -1822,7 +2073,7 @@ function duplicateCourse(courseId){
   const copy = JSON.parse(JSON.stringify(course));
   copy.id = uid("course");
   copy.title = course.title + " copy";
-  copy.enabled = false;
+  setCourseVisibility(copy, "shadow");
   copy.meetings = (copy.meetings || []).map(m => ({...m, id:uid("meet")}));
   t.courses.push(copy);
   persist();
@@ -1953,6 +2204,7 @@ function saveMeeting(){
       title:document.getElementById("mNewCourseName").value.trim() || "New course",
       color:hex.toLowerCase(),
       enabled:true,
+      visibility:"visible",
       meetings:[]
     };
     t.courses.push(course);
@@ -2103,6 +2355,7 @@ function importFromPastedJson(){
     const mode = document.getElementById("gptImportMode").value;
     importDataObject(data, mode);
     closeGptImport();
+    hideContextMenu();
     document.getElementById("gptJsonInput").value = "";
   }catch(err){
     alert("That JSON could not be imported. Make sure GPT outputs valid JSON only.");
@@ -2151,6 +2404,7 @@ function normalizeImportedTimetable(input, fallbackTitle="Imported"){
       title,
       color: safeHex(c.color, colorForIndex(ci)),
       enabled: c.enabled !== false,
+      visibility: c.visibility || (c.enabled === false ? "shadow" : "visible"),
       meetings: []
     };
     const meetings = Array.isArray(c.meetings) ? c.meetings : [];
@@ -2289,6 +2543,65 @@ function importSchedule(event){
   event.target.value = "";
 }
 
+
+function hideContextMenu(){
+  const menu = document.getElementById("contextMenu");
+  if(menu) menu.style.display = "none";
+  contextTarget = null;
+}
+function showContextMenu(x, y, items){
+  const menu = document.getElementById("contextMenu");
+  if(!menu) return;
+  menu.innerHTML = "";
+  items.forEach(item => {
+    if(item === "sep"){
+      menu.appendChild(document.createElement("hr"));
+      return;
+    }
+    const btn = document.createElement("button");
+    btn.innerHTML = `<span>${item.label}</span>${item.hint ? `<span class="small">${item.hint}</span>` : ""}`;
+    btn.addEventListener("click", () => {
+      hideContextMenu();
+      item.action();
+    });
+    menu.appendChild(btn);
+  });
+  menu.style.display = "block";
+  const rect = menu.getBoundingClientRect();
+  menu.style.left = Math.min(x, window.innerWidth - rect.width - 12) + "px";
+  menu.style.top = Math.min(y, window.innerHeight - rect.height - 12) + "px";
+}
+function showCourseContextMenu(x, y, courseId){
+  const course = current().courses.find(c => c.id === courseId);
+  if(!course) return;
+  showContextMenu(x, y, [
+    {label:"Edit course", action:() => openCourseModal(courseId)},
+    {label:"Duplicate course", action:() => duplicateCourse(courseId)},
+    "sep",
+    {label:"Make visible", action:() => { setCourseVisibility(course, "visible"); persist(); render(); }},
+    {label:"Convert to shadow", action:() => { setCourseVisibility(course, "shadow"); persist(); render(); }},
+    {label:"Hide entirely", action:() => { setCourseVisibility(course, "hidden"); persist(); render(); }},
+    "sep",
+    {label:"Delete course", action:() => { editingCourseId = courseId; deleteCourse(); }}
+  ]);
+}
+function showMeetingContextMenu(x, y, courseId, meetingId){
+  const found = findMeeting(courseId, meetingId);
+  if(!found) return;
+  showContextMenu(x, y, [
+    {label:"Edit time block", action:() => openMeetingModal(courseId, meetingId)},
+    {label:"Select this option", action:() => selectMeetingOption(courseId, meetingId)},
+    "sep",
+    {label:"Make course visible", action:() => { setCourseVisibility(found.course, "visible"); persist(); render(); }},
+    {label:"Convert course to shadow", action:() => { setCourseVisibility(found.course, "shadow"); persist(); render(); }},
+    {label:"Hide course entirely", action:() => { setCourseVisibility(found.course, "hidden"); persist(); render(); }},
+    "sep",
+    {label:"Duplicate course", action:() => duplicateCourse(courseId)},
+    {label:"Delete this time", action:() => { editingMeeting = {isNew:false, courseId, meetingId}; deleteMeeting(); }}
+  ]);
+}
+
+
 function render(){
   const t = current();
   activeDays = getDays();
@@ -2320,12 +2633,18 @@ document.getElementById("meetingModalOverlay").addEventListener("click", e => {
 });
 document.getElementById("gptImportModalOverlay").addEventListener("click", e => {
   if(e.target.id === "gptImportModalOverlay") closeGptImport();
+    hideContextMenu();
 });
+document.addEventListener("click", e => {
+  if(!e.target.closest("#contextMenu")) hideContextMenu();
+});
+document.addEventListener("scroll", hideContextMenu, true);
 document.addEventListener("keydown", e => {
   if(e.key === "Escape"){
     closeCourseModal();
     closeMeetingModal();
     closeGptImport();
+    hideContextMenu();
   }
 });
 window.addEventListener("resize", () => {

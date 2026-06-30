@@ -1,8 +1,6 @@
 # Timetable Studio
 
-A clean monochrome timetable builder for courses, labs, tutorials, practicals, work blocks, and weekly planning.
-
-Timetable Studio is a single-file web app. You can use it locally, push it to GitHub, or host it with GitHub Pages.
+A clean monochrome timetable builder for courses, labs, tutorials, practicals, work blocks and weekly planning.
 
 ## Features
 
@@ -30,15 +28,7 @@ Timetable Studio is a single-file web app. You can use it locally, push it to Gi
 
 ## Basic usage
 
-Open `index.html` in a browser. No build step is required.
-
-1. Choose or create a timetable tab, such as Fall or Winter.
-2. Drag on the calendar grid to create a time block.
-3. Edit the course name, component, section, time, location, notes, and color.
-4. Add more blocks to the same course for lectures, tutorials, practicals, or other meetings.
-5. Use the course bank accordion to manage course visibility and options.
-6. Use shadow options to compare possible schedules.
-7. Use undo/redo if you make a mistake.
+Open https://bedzeppelin.github.io/timetable-builder/
 
 ## Course visibility
 
@@ -109,6 +99,7 @@ Depending on what you right-click, you can quickly:
 ## Using ChatGPT with course screenshots
 
 You can use ChatGPT to extract timetable information from screenshots of your school’s course enrolment page.
+I recommend only doing a semester at a time and capture all info in your screenshots for best practice.
 
 ### Workflow
 
@@ -248,16 +239,6 @@ To force an option to stay as a shadow, add:
 ## Full backup JSON
 
 The normal `Export JSON` button exports the full internal app format. You can import that file later with `Import JSON`.
-
-## Deploying with GitHub Pages
-
-1. Create a new GitHub repo.
-2. Upload `index.html` and `README.md`.
-3. Go to `Settings`.
-4. Go to `Pages`.
-5. Set the source to your main branch.
-6. Save.
-7. Open the published GitHub Pages URL.
 
 ## Notes
 

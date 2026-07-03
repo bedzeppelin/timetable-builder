@@ -1,125 +1,110 @@
 # Timetable Studio
 
-A clean monochrome timetable builder for courses, labs, tutorials, practicals, work blocks and weekly planning.
+Timetable Studio is a clean timetable builder for planning courses, lectures, tutorials, practicals, labs, work blocks, and weekly routines.
 
-## Features
+Open the app here: https://bedzeppelin.github.io/timetable-builder/
 
-- Multiple timetable tabs, such as Fall and Winter
-- Click-and-drag to create time blocks
-- Drag blocks to move them
-- Resize blocks from the bottom handle
-- Courses can contain Lecture, Tutorial, Practical, or Other blocks
-- Course visibility has three states:
-  - `Visible`: shown and counted in the schedule
-  - `Shadow`: shown faintly but not counted
-  - `Hidden`: not shown on the timetable at all
-- Course bank uses accordion-style dropdown cards
-- Multiple tutorial/practical options can be imported as shadows
-- Click a shadow option to select it
-- Undo and redo buttons
-- Right-click context menus for tabs, course cards, and timetable blocks
-- Hex-code color customization
-- Conflict checking
-- Free-day and busy-hour summaries
-- Modern time selection with quick duration chips
-- Export/import JSON
-- Paste GPT-generated JSON directly into the app
-- Printable / save as PDF
+## What you can do
 
-## Basic usage
-
-Open https://bedzeppelin.github.io/timetable-builder/
+- Create multiple timetable tabs, such as Fall and Winter.
+- Click and drag to create time blocks.
+- Drag blocks to move them.
+- Resize blocks from the bottom handle.
+- Add lectures, tutorials, practicals, and other blocks under the same course.
+- Set courses to Visible, Shadow, or Hidden.
+- Show, shadow, or hide all lectures/tutorials/practicals globally.
+- Control lecture/tutorial/practical visibility for each individual course.
+- Keep alternative tutorials and practicals as shadows while planning.
+- Hide alternative tutorial/practical shadows after choosing the option you want.
+- Generate preset schedules such as condensed days, spread out, latest starts, and balanced.
+- Export your final schedule as JSON or ICS.
+- Import GPT-generated JSON from course screenshots.
+- Upload screenshots directly when the hosted version includes the GPT extractor backend.
+- Use undo and redo for mistakes.
 
 ## Course visibility
 
-Each course has three visibility states.
+Each course can be set to one of three visibility states.
 
 ### Visible
 
-The course appears normally on the timetable. Selected lecture/tutorial/practical blocks count toward:
-
-- conflicts
-- busy hours
-- free days
+The course appears normally and counts toward conflicts, busy hours, and free days.
 
 ### Shadow
 
-The course appears faintly on the timetable but does not count toward conflicts, busy hours, or free days. This is useful when comparing possible courses.
+The course appears faintly but does not count toward conflicts, busy hours, or free days. This is useful when comparing possible courses.
 
 ### Hidden
 
-The course does not appear on the timetable at all. It still remains in the course bank so you can bring it back later.
+The course does not appear on the timetable at all, but it stays saved in the course bank.
 
-## How course options work
+## Component visibility
 
-A course can contain multiple blocks:
+Timetable Studio can control components globally or course by course.
+
+Components are:
 
 - Lecture
 - Tutorial
 - Practical
 - Other
 
-The course bank is accordion-style so courses with many tutorial or practical options do not take over the sidebar.
+Each component can be:
 
-If a course has multiple tutorial or practical options, Timetable Studio can keep those options as shadows. Shadow options are visible but do **not** count toward conflicts, busy hours, or free days.
+- Visible
+- Shadow
+- Hidden
 
-To choose an option, click the shadow block on the timetable or press the `select` button in the course bank. Selecting one option for a component will deselect the other options for that same component.
+For example, you can hide all practicals globally, or hide only the practicals for one specific course.
 
-Example:
+## Tutorial and practical alternatives
 
-```text
-BIO360
-  Lecture: LEC0101 selected
-  Tutorial: TUT0101 shadow
-  Tutorial: TUT0102 selected
-  Practical: PRA0101 shadow
-  Practical: PRA0102 shadow
-```
+Many courses have multiple tutorial or practical options. Timetable Studio can import all of them and keep the alternatives as shadows.
 
-Only the selected tutorial/practical counts in the schedule.
+After choosing the option you want, use `Hide alts` to hide the extra shadow options. You can bring them back with `Show alts`.
 
-## Right-click menus
+## Preset schedules
 
-You can right-click:
+The app can generate preset timetable tabs from your current courses:
 
-- timetable tabs
-- course cards in the course bank
-- timetable blocks
+- Condensed days
+- Spread out
+- Latest starts
+- Balanced
 
-Depending on what you right-click, you can quickly:
+The preset generator runs locally in your browser and tries to avoid conflicts.
 
-- edit
-- duplicate
-- delete
-- make visible
-- convert to shadow
-- hide entirely
-- select a shadow option
+## Exporting to calendar
+
+Use `Import / export` → `Export ICS` to download a calendar file.
+
+You can import the `.ics` file into Google Calendar, Apple Calendar, Outlook, and other calendar apps.
 
 ## Using ChatGPT with course screenshots
 
-You can use ChatGPT to extract timetable information from screenshots of your school’s course enrolment page.
-I recommend only doing a semester at a time and capture all info in your screenshots for best practice.
+You can upload course screenshots to ChatGPT and ask it to convert them into Timetable Studio JSON.
 
-### Workflow
+### Manual workflow
 
-1. Take screenshots of the course sections on your school website.
-2. Open ChatGPT.
-3. Upload the screenshots.
-4. Paste the prompt below.
-5. Copy the JSON that ChatGPT gives you.
-6. Open Timetable Studio.
-7. Click `Paste GPT JSON`.
-8. Choose one import mode:
-   - `Add as new timetable tab`
-   - `Replace current timetable`
-   - `Merge into current timetable`
-9. Paste the JSON and click `Import`.
-10. Review any items marked `CHECK`.
+1. Take screenshots of your school course sections.
+2. Upload the screenshots to ChatGPT.
+3. Paste the prompt below.
+4. Copy the JSON response.
+5. Open Timetable Studio.
+6. Go to `Import / export` → `Paste GPT JSON`.
+7. Paste the JSON and import it.
+8. Review anything marked `CHECK`.
 
-### Prompt to give ChatGPT
+### Built-in screenshot workflow
 
-Copy this prompt and send it with your screenshots:
+If the hosted app has the GPT extractor enabled:
+
+1. Go to `Import / export` → `Upload screenshots`.
+2. Drag screenshots into the popup or choose files.
+3. Click `Extract with GPT`.
+4. Review the imported timetable and anything marked `CHECK`.
+
+### Prompt for ChatGPT
 
 ```text
 Extract the course timetable information from these screenshots and convert it into JSON for my Timetable Studio app.
@@ -134,7 +119,7 @@ Rules:
       "code": "BIO360",
       "name": "Biometrics I",
       "color": "#dbeafe",
-      "enabled": true,
+      "visibility": "visible",
       "meetings": [
         {
           "type": "Lecture",
@@ -159,6 +144,7 @@ Rules:
 - Each course should be one course object.
 - Put Lecture, Tutorial, and Practical times as separate meetings inside the same course.
 - If a course has multiple tutorial or practical options, include ALL options. Do not choose one unless clearly selected.
+- You may use "visibility": "visible", "shadow", or "hidden" on a course. If unsure, use "visible".
 - Use type as one of: Lecture, Tutorial, Practical, Other.
 - Use full day names: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.
 - Use 24-hour time like "09:00" and "17:00".
@@ -167,54 +153,35 @@ Rules:
 - Include section codes when visible, like LEC0101, TUT0102, PRA0101.
 ```
 
-## Simplified GPT JSON format
+## JSON compatibility
 
-Timetable Studio accepts this simplified format:
+Older timetable JSON still works.
+
+Older files that use:
 
 ```json
-{
-  "title": "Fall",
-  "courses": [
-    {
-      "code": "BIO360",
-      "name": "Biometrics I",
-      "color": "#dbeafe",
-      "visibility": "visible",
-      "meetings": [
-        {
-          "type": "Lecture",
-          "section": "LEC0101",
-          "day": "Monday",
-          "start": "15:00",
-          "end": "17:00",
-          "location": "IB 345",
-          "notes": ""
-        },
-        {
-          "type": "Tutorial",
-          "section": "TUT0101",
-          "day": "Tuesday",
-          "start": "09:00",
-          "end": "10:00",
-          "location": "CC 2140",
-          "notes": ""
-        },
-        {
-          "type": "Tutorial",
-          "section": "TUT0102",
-          "day": "Wednesday",
-          "start": "13:00",
-          "end": "14:00",
-          "location": "CC 2140",
-          "notes": ""
-        }
-      ]
-    }
-  ]
-}
+"enabled": true
 ```
 
-Valid course visibility values:
+are treated as:
+
+```json
+"visibility": "visible"
+```
+
+Older files that use:
+
+```json
+"enabled": false
+```
+
+are treated as:
+
+```json
+"visibility": "shadow"
+```
+
+Newer files can use:
 
 ```json
 "visibility": "visible"
@@ -222,26 +189,4 @@ Valid course visibility values:
 "visibility": "hidden"
 ```
 
-When multiple options are imported for the same component, such as multiple tutorials, Timetable Studio imports those options as shadows unless a meeting has `"selected": true`.
-
-To force a specific option to be selected, add:
-
-```json
-"selected": true
-```
-
-To force an option to stay as a shadow, add:
-
-```json
-"selected": false
-```
-
-## Full backup JSON
-
-The normal `Export JSON` button exports the full internal app format. You can import that file later with `Import JSON`.
-
-## Notes
-
-Schedule data is saved locally in the browser using `localStorage`.
-
-The app uses Poppins from Google Fonts with system font fallbacks. No font files are included in this repo.
+Schedule data is saved locally in your browser with `localStorage`.

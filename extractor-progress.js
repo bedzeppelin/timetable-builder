@@ -119,4 +119,65 @@ window.extractScheduleFromScreenshots = async function extractScheduleFromScreen
   }
 };
 
+window.exportICS = function exportICSWithCourseColorMetadata(){
+  const meetings = enabledMeetings();
+  if(!meetings.length){
+    alert("There are no visible selected meetings to export.");
+    return;
+  }
+  const monday = prompt("Enter the first Monday date of the semester/session (YYYY-MM-DD):", "");
+  if(!monday) return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(monday)){
+    alert("Use YYYY-MM-DD format.");
+    return;
+  }
+  const weeksRaw = prompt("How many weeks should repeat?", "12");
+  if(!weeksRaw) return;
+  const weeks = Math.max(1, Math.min(52, Number(weeksRaw) || 12));
+  const dayOffsets = {Monday:0, Tuesday:1, Wednesday:2, Thursday:3, Friday:4, Saturday:5, Sunday:6};
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Timetable Studio//Schedule Export//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+
+  meetings.forEach(m => {
+    const dateObj = addDaysToDate(monday, dayOffsets[m.day] ?? 0);
+    const courseColor = m.color || "";
+    const description = [
+      m.notes || "Created with Timetable Studio",
+      `Course: ${m.courseTitle || ""}`,
+      `Component: ${componentText(m)}`,
+      courseColor ? `Timetable Studio color: ${courseColor}` : ""
+    ].filter(Boolean).join("\n");
+
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${icsEscape(m.courseId)}-${icsEscape(m.id)}-${Date.now()}@timetable-studio`,
+      `DTSTAMP:${stamp}`,
+      `SUMMARY:${icsEscape(`${m.courseTitle} ${componentText(m)}`)}`,
+      `DTSTART:${formatICSDateTime(dateObj, m.start)}`,
+      `DTEND:${formatICSDateTime(dateObj, m.end)}`,
+      `RRULE:FREQ=WEEKLY;COUNT=${weeks}`,
+      `LOCATION:${icsEscape(m.location || "")}`,
+      `DESCRIPTION:${icsEscape(description)}`,
+      `CATEGORIES:${icsEscape(m.courseTitle || "Timetable Studio")}`,
+      courseColor ? `X-TIMETABLE-COLOR:${icsEscape(courseColor)}` : "",
+      courseColor ? `COLOR:${icsEscape(courseColor)}` : "",
+      "END:VEVENT"
+    );
+  });
+
+  lines.push("END:VCALENDAR");
+  const blob = new Blob([lines.filter(Boolean).join("\r\n")], {type:"text/calendar;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${(current().title || "schedule").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-schedule.ics`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
 window.addEventListener("DOMContentLoaded", ensureScreenshotProgressUI);

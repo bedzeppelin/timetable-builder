@@ -16,7 +16,7 @@ Open the app here: https://timetable-builder-ashen.vercel.app/
 - Control lecture/tutorial/practical visibility for each individual course.
 - Keep alternative tutorials and practicals as shadows while planning.
 - Hide alternative tutorial/practical shadows after choosing the option you want.
-- Generate preset schedules such as condensed days, spread out, latest starts, and balanced.
+- Generate preset schedules using the number of courses you plan to take.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
 - Upload screenshots directly with the GPT extractor.
@@ -69,9 +69,17 @@ The app can generate preset timetable tabs from your current timetable.
 
 ### How presets work
 
-In plain language: Timetable Studio looks at the courses and options in the current tab, tries different combinations, scores them, and creates new timetable tabs based on the preset types you choose.
+In plain language: Timetable Studio looks at the courses and options in the current tab, tries different combinations, and creates new timetable tabs based on the number of courses and preset types you choose.
 
 The preset generator does **not** check enrolment availability, waitlists, program requirements, prerequisites, or whether a course is actually open. It is a planning helper. Always review the final schedule manually before enrolling.
+
+### Number of courses
+
+When you click `Generate presets`, you can choose how many courses you are actually taking in the semester.
+
+The default is **5 courses**. The maximum option is **6 courses**.
+
+If fewer usable courses are available than the number you choose, Timetable Studio will generate the best schedule it can with the available courses.
 
 ### What the generator uses
 
@@ -93,6 +101,7 @@ This means `Hide alts` is useful before generating presets because hidden altern
 
 When you click `Generate presets`, you can choose:
 
+- How many courses to include, from 1 to 6.
 - Whether to include visible, shadow, or hidden courses.
 - Whether to include selected options, shadow alternatives, or hidden alternatives.
 - Whether to respect hidden lecture/tutorial/practical component controls.
@@ -114,7 +123,7 @@ Available preset types include:
 - No evening classes
 - Commute-friendly
 
-Each generated preset includes notes explaining how it was made, how many conflicts were found, how many days are active, how much gap time exists, and whether selected choices were changed.
+Each generated preset includes notes explaining how it was made, how many courses were requested, how many courses were included, how many conflicts were found, how many days are active, how much gap time exists, and whether selected choices were changed.
 
 ## Exporting to Google Calendar
 

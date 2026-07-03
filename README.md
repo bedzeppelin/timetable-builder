@@ -17,6 +17,7 @@ Open the app here: https://timetable-builder-ashen.vercel.app/
 - Keep alternative tutorials and practicals as shadows while planning.
 - Hide alternative tutorial/practical shadows after choosing the option you want.
 - Generate preset schedules using the number of courses you plan to take.
+- Explore different course combinations when you are still deciding what to take.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
 - Upload screenshots directly with the GPT extractor.
@@ -69,7 +70,7 @@ The app can generate preset timetable tabs from your current timetable.
 
 ### How presets work
 
-In plain language: Timetable Studio looks at the courses and options in the current tab, tries different combinations, and creates new timetable tabs based on the number of courses and preset types you choose.
+In plain language: Timetable Studio looks at the courses and options in the current tab, tries different combinations, and creates new timetable tabs based on the number of courses, course-selection mode, and preset types you choose.
 
 The preset generator does **not** check enrolment availability, waitlists, program requirements, prerequisites, or whether a course is actually open. It is a planning helper. Always review the final schedule manually before enrolling.
 
@@ -80,6 +81,20 @@ When you click `Generate presets`, you can choose how many courses you are actua
 The default is **5 courses**. The maximum option is **6 courses**.
 
 If fewer usable courses are available than the number you choose, Timetable Studio will generate the best schedule it can with the available courses.
+
+### Course selection mode
+
+There are two course-selection modes.
+
+#### Best schedule fit
+
+This mode chooses the strongest-scoring schedule for each preset. It is best when you already know which courses you mostly want and you are trying to choose tutorials, practicals, or the cleanest weekly layout.
+
+#### Explore different course combinations
+
+This mode intentionally tries to make the generated tabs use different course sets. It is best when you have a larger pool of possible courses and are not sure which ones you want to take yet.
+
+For example, if you import 8 possible courses but only plan to take 5, explore mode tries to show different 5-course combinations across the generated preset tabs instead of repeating the same 5 courses every time.
 
 ### What the generator uses
 
@@ -102,6 +117,7 @@ This means `Hide alts` is useful before generating presets because hidden altern
 When you click `Generate presets`, you can choose:
 
 - How many courses to include, from 1 to 6.
+- Whether to use best schedule fit or explore different course combinations.
 - Whether to include visible, shadow, or hidden courses.
 - Whether to include selected options, shadow alternatives, or hidden alternatives.
 - Whether to respect hidden lecture/tutorial/practical component controls.
@@ -123,7 +139,7 @@ Available preset types include:
 - No evening classes
 - Commute-friendly
 
-Each generated preset includes notes explaining how it was made, how many courses were requested, how many courses were included, how many conflicts were found, how many days are active, how much gap time exists, and whether selected choices were changed.
+Each generated preset includes notes explaining how it was made, how many courses were requested, how many courses were included, which course-selection mode was used, how many conflicts were found, how many days are active, how much gap time exists, and whether selected choices were changed.
 
 ## Exporting to Google Calendar
 

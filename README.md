@@ -15,10 +15,11 @@ Open the app here: https://bedzeppelin.github.io/timetable-builder/
 - Show, shadow, or hide all lectures/tutorials/practicals globally.
 - Control lecture/tutorial/practical visibility for each individual course.
 - Keep alternative tutorials and practicals as shadows while planning.
-- Hide alternative tutorial/practical shadows after choosing the one you want.
+- Hide alternative tutorial/practical shadows after choosing the option you want.
 - Generate preset schedules such as condensed days, spread out, latest starts, and balanced.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
+- Upload screenshots directly when the hosted version includes the GPT extractor backend.
 - Use undo and redo for mistakes.
 
 ## Course visibility
@@ -83,7 +84,7 @@ You can import the `.ics` file into Google Calendar, Apple Calendar, Outlook, an
 
 You can upload course screenshots to ChatGPT and ask it to convert them into Timetable Studio JSON.
 
-### Workflow
+### Manual workflow
 
 1. Take screenshots of your school course sections.
 2. Upload the screenshots to ChatGPT.
@@ -93,6 +94,15 @@ You can upload course screenshots to ChatGPT and ask it to convert them into Tim
 6. Go to `Import / export` → `Paste GPT JSON`.
 7. Paste the JSON and import it.
 8. Review anything marked `CHECK`.
+
+### Built-in screenshot workflow
+
+If the hosted app has the GPT extractor enabled:
+
+1. Go to `Import / export` → `Upload screenshots`.
+2. Drag screenshots into the popup or choose files.
+3. Click `Extract with GPT`.
+4. Review the imported timetable and anything marked `CHECK`.
 
 ### Prompt for ChatGPT
 

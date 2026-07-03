@@ -2,7 +2,7 @@
 
 Timetable Studio is a clean timetable builder for planning courses, lectures, tutorials, practicals, labs, work blocks, and weekly routines.
 
-Open the app here: https://bedzeppelin.github.io/timetable-builder/
+Open the app here: https://timetable-builder-ashen.vercel.app/
 
 ## What you can do
 
@@ -19,7 +19,7 @@ Open the app here: https://bedzeppelin.github.io/timetable-builder/
 - Generate preset schedules such as condensed days, spread out, latest starts, and balanced.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
-- Upload screenshots directly when the hosted version includes the GPT extractor backend.
+- Upload screenshots directly with the GPT extractor.
 - Use undo and redo for mistakes.
 
 ## Course visibility
@@ -74,11 +74,38 @@ The app can generate preset timetable tabs from your current courses:
 
 The preset generator runs locally in your browser and tries to avoid conflicts.
 
-## Exporting to calendar
+## Exporting to Google Calendar
 
-Use `Import / export` → `Export ICS` to download a calendar file.
+Timetable Studio can export your visible, selected schedule as an `.ics` calendar file.
 
-You can import the `.ics` file into Google Calendar, Apple Calendar, Outlook, and other calendar apps.
+### Step 1: Export from Timetable Studio
+
+1. Finish selecting the courses, tutorials, and practicals you want.
+2. Open `Import / export`.
+3. Click `Export ICS`.
+4. Enter the first Monday date of your semester/session.
+5. Enter how many weeks the schedule should repeat.
+6. Save the `.ics` file that downloads.
+
+### Step 2: Import into Google Calendar
+
+1. Open Google Calendar on a computer.
+2. Click the gear icon.
+3. Open `Settings`.
+4. Go to `Import & export`.
+5. Under `Import`, choose the `.ics` file from Timetable Studio.
+6. Choose the calendar you want to add the events to.
+7. Click `Import`.
+
+The imported events will repeat weekly based on the number of weeks you entered during export.
+
+### Course colors in calendar exports
+
+Timetable Studio includes each course color in the exported event metadata and description. The file also includes course categories.
+
+Google Calendar may not reliably apply individual event colors from an imported `.ics` file. If the colors do not appear automatically, the course color hex code is still saved inside each event description as a reference.
+
+For the most reliable color-coding in Google Calendar, create separate Google calendars for major courses or categories and set each calendar color manually.
 
 ## Using ChatGPT with course screenshots
 
@@ -97,12 +124,11 @@ You can upload course screenshots to ChatGPT and ask it to convert them into Tim
 
 ### Built-in screenshot workflow
 
-If the hosted app has the GPT extractor enabled:
-
 1. Go to `Import / export` → `Upload screenshots`.
 2. Drag screenshots into the popup or choose files.
 3. Click `Extract with GPT`.
-4. Review the imported timetable and anything marked `CHECK`.
+4. Watch the progress bar while the app reads the screenshots and imports the result.
+5. Review the imported timetable and anything marked `CHECK`.
 
 ### Prompt for ChatGPT
 

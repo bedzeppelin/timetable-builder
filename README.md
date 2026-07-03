@@ -65,14 +65,56 @@ After choosing the option you want, use `Hide alts` to hide the extra shadow opt
 
 ## Preset schedules
 
-The app can generate preset timetable tabs from your current courses:
+The app can generate preset timetable tabs from your current timetable.
+
+### How presets work
+
+In plain language: Timetable Studio looks at the courses and options in the current tab, tries different combinations, scores them, and creates new timetable tabs based on the preset types you choose.
+
+The preset generator does **not** check enrolment availability, waitlists, program requirements, prerequisites, or whether a course is actually open. It is a planning helper. Always review the final schedule manually before enrolling.
+
+### What the generator uses
+
+By default, the generator uses:
+
+- Visible courses
+- Shadow courses
+- Selected options
+- Shadow tutorial/practical alternatives
+
+By default, it ignores:
+
+- Hidden courses
+- Hidden alternatives
+
+This means `Hide alts` is useful before generating presets because hidden alternatives will stay out of the solver unless you choose to include them.
+
+### Preset settings
+
+When you click `Generate presets`, you can choose:
+
+- Whether to include visible, shadow, or hidden courses.
+- Whether to include selected options, shadow alternatives, or hidden alternatives.
+- Whether to respect hidden lecture/tutorial/practical component controls.
+- Whether to lock your current selected choices.
+- Which preset types to generate.
+- How deep the solver should search.
+
+### Preset types
+
+Available preset types include:
 
 - Condensed days
 - Spread out
 - Latest starts
 - Balanced
+- Fewest gaps
+- Shortest campus days
+- No early mornings
+- No evening classes
+- Commute-friendly
 
-The preset generator runs locally in your browser and tries to avoid conflicts.
+Each generated preset includes notes explaining how it was made, how many conflicts were found, how many days are active, how much gap time exists, and whether selected choices were changed.
 
 ## Exporting to Google Calendar
 

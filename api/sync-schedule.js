@@ -42,7 +42,7 @@ function supabaseConfig(){
 async function supabaseFetch(path, options={}){
   const config = supabaseConfig();
   if(!config){
-    const error = new Error("Live sync is not configured yet. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel.");
+    const error = new Error("Live sync is not configured yet. Add the Supabase project URL and server key in Vercel.");
     error.status = 501;
     throw error;
   }

@@ -1,40 +1,116 @@
-# No-backend Schedule Transfer
+# Supabase Live Sync Setup
 
-Timetable Studio can move a schedule between a phone and computer without Supabase, login, or any database setup.
+Timetable Studio can sync a schedule between a phone and computer using a short sync code.
 
-This is not live cloud sync. It is a one-time transfer link.
+This version uses Supabase as the small cloud database and Vercel as the server-side API layer. The Supabase secret/service-role key stays in Vercel environment variables and is never exposed to browser JavaScript.
 
-## How it works
+## What users see
 
-1. On your computer, click `Transfer schedule`.
-2. Click `Copy transfer link`.
-3. Send/open that link on your phone.
-4. The app opens a transfer modal.
-5. Tap `Import pasted link`.
+1. On the first device, click `Sync schedule`.
+2. Click `Save / create code`.
+3. Copy the code or sync link.
+4. On the second device, click `Sync schedule` and load the same code.
+5. Turn on `Auto-sync this device` on both devices.
 
-The schedule data is stored inside the link hash after:
+With auto-sync on, edits are saved shortly after changes. Other devices check for updates about every 15 seconds.
+
+## Step 1 — Create a Supabase project
+
+1. Go to Supabase.
+2. Create a new project.
+3. Wait for the database to finish provisioning.
+
+## Step 2 — Create the sync table
+
+1. In Supabase, open the project.
+2. Go to `SQL Editor`.
+3. Paste the SQL from `supabase-sync-table.sql`.
+4. Run it.
+
+The table is:
 
 ```text
-#ts-transfer=
+public.timetable_sync
 ```
 
-Because the data is inside the link itself, no server or database is needed.
+## Step 3 — Get your Supabase credentials
 
-## What this does well
+In Supabase, open the project's API keys/settings area.
 
-- Moves a schedule from laptop to phone.
-- Moves a schedule from phone to laptop.
-- Works without accounts.
-- Works without Supabase.
-- Keeps the app fully static except for the existing screenshot extractor API.
+Copy:
 
-## Limitations
+```text
+SUPABASE_URL
+```
 
-- It is not automatic live sync.
-- If you edit the schedule on your laptop, you need to copy a new transfer link to update your phone.
-- Large schedules create long links. If a link is too long for your messaging app/browser, use `Download JSON backup` and import the JSON on the other device.
-- Anyone with the transfer link can import that schedule.
+Then copy one server-side key:
 
-## Future cloud sync
+```text
+SUPABASE_SECRET_KEY
+```
 
-Real live sync would still need a backend storage service, such as Supabase, Firebase, Vercel KV, or another database. This transfer-link version avoids that setup for now.
+or, if your project is using legacy keys:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY
+```
+
+Do not put the secret/service-role key in frontend JavaScript. It must only go in Vercel environment variables.
+
+## Step 4 — Add environment variables in Vercel
+
+In Vercel:
+
+1. Open the Timetable Studio project.
+2. Go to `Settings`.
+3. Go to `Environment Variables`.
+4. Add:
+
+```text
+SUPABASE_URL=your Supabase project URL
+SUPABASE_SECRET_KEY=your Supabase secret key
+```
+
+If you are using the legacy service-role key instead, add:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=your Supabase service_role key
+```
+
+Optional:
+
+```text
+SYNC_TABLE=timetable_sync
+```
+
+## Step 5 — Redeploy Vercel
+
+After saving environment variables, redeploy the project so `/api/sync-schedule` can read them.
+
+## Testing
+
+1. Open the deployed app on your laptop.
+2. Go to `Import / export` → `Sync schedule`.
+3. Click `Save / create code`.
+4. Turn on `Auto-sync this device`.
+5. Copy the sync link.
+6. Open the link on your phone.
+7. Tap `Load from code`.
+8. Turn on `Auto-sync this device` on the phone.
+9. Make a small change on one device and wait around 15 seconds for the other device to update.
+
+## Security note
+
+This is simple sync, not account-based private sync.
+
+The sync code is the access key. Anyone with the code or link can load and overwrite that synced schedule.
+
+The current behavior is `last save wins` if two devices edit at the same time.
+
+## Current limitations
+
+- No user accounts yet.
+- No list of saved schedules yet.
+- Last save wins.
+- Background checks happen about every 15 seconds, not instantly.
+- Very large timetables over about 1 MB should use JSON export/import instead.

@@ -18,7 +18,8 @@ With auto-sync on, edits are saved shortly after changes. Other devices check fo
 
 1. Go to Supabase.
 2. Create a new project.
-3. Wait for the database to finish provisioning.
+3. Enter the project details.
+4. Wait for the database to finish provisioning.
 
 ## Step 2 — Create the sync table
 
@@ -37,23 +38,29 @@ public.timetable_sync
 
 In Supabase, open the project's API keys/settings area.
 
-Copy:
+Copy your project URL.
+
+Use this Vercel variable name:
 
 ```text
 SUPABASE_URL
 ```
 
-Then copy one server-side key:
+Then copy one server-side key.
+
+Preferred for new Supabase projects:
 
 ```text
 SUPABASE_SECRET_KEY
 ```
 
-or, if your project is using legacy keys:
+If your project is using legacy keys, use:
 
 ```text
 SUPABASE_SERVICE_ROLE_KEY
 ```
+
+The Vercel API route supports either `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY`.
 
 Do not put the secret/service-role key in frontend JavaScript. It must only go in Vercel environment variables.
 

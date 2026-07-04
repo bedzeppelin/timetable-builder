@@ -1,16 +1,16 @@
-/* Simple cloud sync UI for Timetable Studio. */
+/* No-backend device transfer links for Timetable Studio. */
 (function(){
-  const SYNC_CODE_KEY = "timetableStudioSyncCode";
-  let syncBusy = false;
+  const HASH_PREFIX = "#ts-transfer=";
+  const MAX_RECOMMENDED_LINK_LENGTH = 120000;
 
-  function ensureSyncStyles(){
+  function ensureTransferStyles(){
     if(document.getElementById("simpleSyncStyles")) return;
     const style = document.createElement("style");
     style.id = "simpleSyncStyles";
     style.textContent = `
       .syncCodeBox{display:grid;gap:10px;border:1px solid #e4e4df;background:#f8f8f6;border-radius:16px;padding:12px}
       .syncCodeRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-      .syncCodeOutput{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:900;letter-spacing:.08em;background:#111;color:#fff;border-radius:12px;padding:10px 12px;display:inline-flex;align-items:center;min-height:42px}
+      .syncCodeOutput{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:900;letter-spacing:.02em;background:#111;color:#fff;border-radius:12px;padding:10px 12px;display:inline-flex;align-items:center;min-height:42px;word-break:break-all}
       .syncStatus{font-size:.80rem;color:#686868;line-height:1.45;min-height:1.2em}
       .syncPrivacy{font-size:.76rem;color:#686868;line-height:1.45;border-left:3px solid #111;padding-left:10px}
       .syncActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -20,7 +20,7 @@
     document.head.appendChild(style);
   }
 
-  function ensureSyncButton(){
+  function ensureTransferButton(){
     if(document.getElementById("openSyncModalBtn")) return;
     const groups = Array.from(document.querySelectorAll(".menuGroup"));
     const importGroup = groups.find(group => (group.querySelector("summary")?.textContent || "").toLowerCase().includes("import"));
@@ -30,40 +30,39 @@
     btn.id = "openSyncModalBtn";
     btn.className = "ghost";
     btn.type = "button";
-    btn.textContent = "Sync schedule";
+    btn.textContent = "Transfer schedule";
     btn.addEventListener("click", openSyncModal);
     actions.appendChild(btn);
   }
 
-  function ensureSyncModal(){
+  function ensureTransferModal(){
     if(document.getElementById("syncModalOverlay")) return;
-    ensureSyncStyles();
+    ensureTransferStyles();
     const overlay = document.createElement("div");
     overlay.className = "modalOverlay";
     overlay.id = "syncModalOverlay";
     overlay.innerHTML = `
       <div class="modal">
-        <h2>Sync schedule</h2>
+        <h2>Transfer schedule</h2>
         <div class="formStack">
           <div class="syncCodeBox">
-            <div class="small"><b>Simple sync:</b> save this timetable to the cloud, then open it on another device with the same code or link.</div>
-            <label>Sync code
-              <input id="syncCodeInput" placeholder="ABCD-1234" autocomplete="off" autocapitalize="characters" />
-            </label>
+            <div class="small"><b>No-account transfer:</b> this creates a link that carries your current timetable data. Open the link on your phone/computer to import it there.</div>
             <div class="syncCodeRow">
-              <span class="syncCodeOutput" id="syncCodeOutput">No code yet</span>
-              <button class="secondary" type="button" onclick="copySyncLink()">Copy link</button>
+              <span class="syncCodeOutput" id="syncCodeOutput">No transfer link yet</span>
             </div>
+            <label>Paste a transfer link or code
+              <textarea id="syncCodeInput" placeholder="Paste a Timetable Studio transfer link here"></textarea>
+            </label>
             <div class="syncStatus" id="syncStatus"></div>
           </div>
           <div class="syncActions">
-            <button type="button" onclick="saveScheduleToCloud()">Save to cloud</button>
-            <button class="secondary" type="button" onclick="loadScheduleFromCloud()">Load from code</button>
-            <button class="secondary" type="button" onclick="refreshScheduleFromCloud()">Refresh from cloud</button>
-            <button class="ghost" type="button" onclick="clearSyncCode()">Clear code</button>
+            <button type="button" onclick="copySyncLink()">Copy transfer link</button>
+            <button class="secondary" type="button" onclick="loadScheduleFromCloud()">Import pasted link</button>
+            <button class="secondary" type="button" onclick="downloadTransferFile()">Download JSON backup</button>
+            <button class="ghost" type="button" onclick="clearSyncCode()">Clear pasted link</button>
           </div>
           <div class="syncPrivacy">
-            Anyone with the sync code or link can load and overwrite this synced schedule. Use it for your own devices or trusted sharing, not private records.
+            This is not live cloud sync. It is a one-time device transfer. To update your phone after changing your laptop schedule, copy a new transfer link. Anyone with the link can import the schedule.
           </div>
         </div>
         <div class="modalActions">
@@ -85,52 +84,43 @@
     }
   }
 
-  function normalizeCode(code){
-    const raw = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
-    return raw.replace(/(.{4})/g, "$1-").replace(/-$/, "");
-  }
-
-  function currentCode(){
-    return normalizeCode(document.getElementById("syncCodeInput")?.value || localStorage.getItem(SYNC_CODE_KEY) || "");
-  }
-
-  function setCurrentCode(code){
-    const normalized = normalizeCode(code);
-    if(normalized){
-      localStorage.setItem(SYNC_CODE_KEY, normalized);
-    }
-    const input = document.getElementById("syncCodeInput");
-    const output = document.getElementById("syncCodeOutput");
-    if(input) input.value = normalized;
-    if(output) output.textContent = normalized || "No code yet";
-    return normalized;
-  }
-
   function schedulePayload(){
     const notes = document.getElementById("notes");
     if(notes) current().notes = notes.value;
     return JSON.parse(JSON.stringify(state));
   }
 
-  async function syncRequest(body){
-    const response = await fetch("/api/sync-schedule", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(body)
-    });
-    const payload = await response.json().catch(() => ({}));
-    if(!response.ok || !payload.ok){
-      throw new Error(payload.error || "Sync request failed.");
+  function encodePayload(data){
+    const json = JSON.stringify(data);
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    const chunk = 0x8000;
+    for(let i = 0; i < bytes.length; i += chunk){
+      binary += String.fromCharCode(...bytes.slice(i, i + chunk));
     }
-    return payload;
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function decodePayload(encoded){
+    const normalized = String(encoded || "").trim().replace(/^.*#ts-transfer=/, "").replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  function transferUrl(){
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "ts-transfer=" + encodePayload(schedulePayload());
+    return url.toString();
   }
 
   function openSyncModal(){
-    ensureSyncModal();
+    ensureTransferModal();
     document.getElementById("syncModalOverlay").style.display = "flex";
-    setCurrentCode(localStorage.getItem(SYNC_CODE_KEY) || "");
-    setSyncStatus("Save first to create a sync code, or enter an existing code and load it.");
     document.body.classList.remove("mobileDrawerOpen");
+    setSyncStatus("Copy a transfer link, send/open it on your other device, then import it there.");
   }
 
   function closeSyncModal(){
@@ -138,47 +128,60 @@
     if(overlay) overlay.style.display = "none";
   }
 
-  async function saveScheduleToCloud(){
-    if(syncBusy) return;
-    syncBusy = true;
-    setSyncStatus("Saving schedule to cloud...");
+  function saveScheduleToCloud(){
+    copySyncLink();
+  }
+
+  async function copySyncLink(){
     try{
-      const code = currentCode();
-      const payload = await syncRequest({action:"save", code:code || undefined, data:schedulePayload(), label:current().title || "Timetable Studio"});
-      setCurrentCode(payload.code);
-      setSyncStatus(`Saved. Use code ${payload.code} on your other device.`);
+      const link = transferUrl();
+      const output = document.getElementById("syncCodeOutput");
+      if(output) output.textContent = link.length > 54 ? link.slice(0, 54) + "..." : link;
+      if(link.length > MAX_RECOMMENDED_LINK_LENGTH){
+        setSyncStatus("This schedule link is very long. Copy may still work, but Export JSON may be safer for this timetable.", true);
+      }else{
+        setSyncStatus("Transfer link created and copied. Open it on your other device.");
+      }
+      await navigator.clipboard.writeText(link);
     }catch(error){
-      setSyncStatus(error.message || String(error), true);
-    }finally{
-      syncBusy = false;
+      setSyncStatus("Could not copy automatically. Try Export JSON instead.", true);
     }
   }
 
-  async function loadScheduleFromCloud(){
-    if(syncBusy) return;
-    const code = currentCode();
+  function extractTransferCode(value){
+    const raw = String(value || "").trim();
+    if(!raw) return "";
+    if(raw.includes("#ts-transfer=")) return raw.split("#ts-transfer=").pop();
+    return raw.replace(/^ts-transfer=/, "");
+  }
+
+  function importTransferPayload(data){
+    if(!data || !Array.isArray(data.timetables)){
+      throw new Error("This does not look like a Timetable Studio transfer link.");
+    }
+    state = data;
+    if(!state.activeTimetableId || !state.timetables.some(t => t.id === state.activeTimetableId)){
+      state.activeTimetableId = state.timetables[0]?.id;
+    }
+    persist();
+    render();
+  }
+
+  function loadScheduleFromCloud(){
+    const input = document.getElementById("syncCodeInput");
+    const code = extractTransferCode(input?.value || window.location.hash);
     if(!code){
-      setSyncStatus("Enter a sync code first.", true);
+      setSyncStatus("Paste a transfer link first.", true);
       return;
     }
-    if(!confirm("Load this synced schedule? This will replace the timetable data on this device.")) return;
-    syncBusy = true;
-    setSyncStatus("Loading schedule...");
+    if(!confirm("Import this transferred schedule? This will replace the timetable data on this device.")) return;
     try{
-      const payload = await syncRequest({action:"load", code});
-      state = payload.data;
-      if(!state.activeTimetableId || !state.timetables?.some(t => t.id === state.activeTimetableId)){
-        state.activeTimetableId = state.timetables?.[0]?.id;
-      }
-      setCurrentCode(payload.code);
-      persist();
-      render();
+      importTransferPayload(decodePayload(code));
       closeSyncModal();
-      alert("Synced schedule loaded on this device.");
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      alert("Schedule imported on this device.");
     }catch(error){
       setSyncStatus(error.message || String(error), true);
-    }finally{
-      syncBusy = false;
     }
   }
 
@@ -186,43 +189,37 @@
     loadScheduleFromCloud();
   }
 
-  async function copySyncLink(){
-    const code = currentCode();
-    if(!code){
-      setSyncStatus("Save first or enter a code before copying a link.", true);
-      return;
-    }
-    const url = new URL(window.location.href);
-    url.searchParams.set("sync", code);
-    try{
-      await navigator.clipboard.writeText(url.toString());
-      setSyncStatus("Sync link copied.");
-    }catch{
-      setSyncStatus(url.toString());
-    }
-  }
-
   function clearSyncCode(){
-    localStorage.removeItem(SYNC_CODE_KEY);
-    setCurrentCode("");
-    setSyncStatus("Sync code cleared from this device. Cloud copy is not deleted.");
+    const input = document.getElementById("syncCodeInput");
+    const output = document.getElementById("syncCodeOutput");
+    if(input) input.value = "";
+    if(output) output.textContent = "No transfer link yet";
+    setSyncStatus("Pasted transfer link cleared.");
   }
 
-  function checkSyncUrl(){
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("sync");
-    if(!code) return;
-    ensureSyncModal();
+  function downloadTransferFile(){
+    const blob = new Blob([JSON.stringify(schedulePayload(), null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "timetable-studio-transfer.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setSyncStatus("JSON backup downloaded. Import it on another device using Import JSON.");
+  }
+
+  function checkTransferUrl(){
+    if(!window.location.hash.startsWith(HASH_PREFIX)) return;
+    ensureTransferModal();
     document.getElementById("syncModalOverlay").style.display = "flex";
-    setCurrentCode(code);
-    setSyncStatus("This link contains a sync code. Tap Load from code to import it on this device.");
+    const input = document.getElementById("syncCodeInput");
+    if(input) input.value = window.location.href;
+    setSyncStatus("This link contains a transferred schedule. Tap Import pasted link to load it on this device.");
   }
 
-  function bootSync(){
-    ensureSyncButton();
-    ensureSyncModal();
-    setCurrentCode(localStorage.getItem(SYNC_CODE_KEY) || "");
-    checkSyncUrl();
+  function bootTransfer(){
+    ensureTransferButton();
+    ensureTransferModal();
+    checkTransferUrl();
   }
 
   window.openSyncModal = openSyncModal;
@@ -232,10 +229,11 @@
   window.refreshScheduleFromCloud = refreshScheduleFromCloud;
   window.copySyncLink = copySyncLink;
   window.clearSyncCode = clearSyncCode;
+  window.downloadTransferFile = downloadTransferFile;
 
   if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", bootSync);
+    document.addEventListener("DOMContentLoaded", bootTransfer);
   }else{
-    bootSync();
+    bootTransfer();
   }
 })();

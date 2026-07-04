@@ -2,7 +2,7 @@
 
 Timetable Studio can sync a schedule between a phone and computer using a short sync code.
 
-This version uses Supabase as the small cloud database and Vercel as the server-side API layer. The Supabase secret/service-role key stays in Vercel environment variables and is never exposed to browser JavaScript.
+This version uses Supabase as the small cloud database and Vercel as the server-side API layer. The Supabase service-role key stays in Vercel environment variables and is never exposed to browser JavaScript.
 
 ## What users see
 
@@ -38,31 +38,16 @@ public.timetable_sync
 
 In Supabase, open the project's API keys/settings area.
 
-Copy your project URL.
+Copy your project URL and your server-side service-role key.
 
-Use this Vercel variable name:
-
-```text
-SUPABASE_URL
-```
-
-Then copy one server-side key.
-
-Preferred for new Supabase projects:
+Use these Vercel variable names:
 
 ```text
-SUPABASE_SECRET_KEY
+SUPABASE_URL=your Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY=your Supabase service_role key
 ```
 
-If your project is using legacy keys, use:
-
-```text
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-The Vercel API route supports either `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY`.
-
-Do not put the secret/service-role key in frontend JavaScript. It must only go in Vercel environment variables.
+Do not put the service-role key in frontend JavaScript. It must only go in Vercel environment variables.
 
 ## Step 4 — Add environment variables in Vercel
 
@@ -75,12 +60,6 @@ In Vercel:
 
 ```text
 SUPABASE_URL=your Supabase project URL
-SUPABASE_SECRET_KEY=your Supabase secret key
-```
-
-If you are using the legacy service-role key instead, add:
-
-```text
 SUPABASE_SERVICE_ROLE_KEY=your Supabase service_role key
 ```
 

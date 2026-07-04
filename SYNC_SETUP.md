@@ -2,7 +2,7 @@
 
 Timetable Studio can sync a schedule between a phone and computer using a short sync code.
 
-This version uses Supabase as the small cloud database and Vercel as the server-side API layer. The Supabase service-role key stays in Vercel environment variables and is never exposed to browser JavaScript.
+This version uses Supabase as the small cloud database and Vercel as the server-side API layer. The Supabase server key stays in Vercel environment variables and is never exposed to browser JavaScript.
 
 ## What users see
 
@@ -38,16 +38,16 @@ public.timetable_sync
 
 In Supabase, open the project's API keys/settings area.
 
-Copy your project URL and your server-side service-role key.
+Copy your project URL and your server-side key.
 
-Use these Vercel variable names:
+Add them to Vercel using these exact variable names:
 
 ```text
 SUPABASE_URL=your Supabase project URL
-SUPABASE_SERVICE_ROLE_KEY=your Supabase service_role key
+SUPABASE_SERVICE_ROLE_KEY=your server-side Supabase key
 ```
 
-Do not put the service-role key in frontend JavaScript. It must only go in Vercel environment variables.
+Do not put the server-side key in frontend JavaScript. It must only go in Vercel environment variables.
 
 ## Step 4 — Add environment variables in Vercel
 
@@ -56,12 +56,7 @@ In Vercel:
 1. Open the Timetable Studio project.
 2. Go to `Settings`.
 3. Go to `Environment Variables`.
-4. Add:
-
-```text
-SUPABASE_URL=your Supabase project URL
-SUPABASE_SERVICE_ROLE_KEY=your Supabase service_role key
-```
+4. Add the two variables from Step 3.
 
 Optional:
 

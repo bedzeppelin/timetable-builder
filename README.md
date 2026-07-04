@@ -18,10 +18,24 @@ Open the app here: https://timetable-builder-ashen.vercel.app/
 - Hide alternative tutorial/practical shadows after choosing the option you want.
 - Generate preset schedules using the number of courses you plan to take.
 - Explore different course combinations when you are still deciding what to take.
+- Use mobile-friendly agenda and vertical grid views on phones.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
 - Upload screenshots directly with the GPT extractor.
 - Use undo and redo for mistakes.
+
+## Mobile use
+
+Timetable Studio uses the same app link on desktop and mobile, but the layout changes on small screens.
+
+On mobile, the schedule becomes the main view. The control sidebar moves into a tap-to-open menu, so the app is easier to use on a phone.
+
+Mobile includes two schedule views:
+
+- **Agenda**: a clean day-by-day list of time blocks.
+- **Grid**: a vertical day-by-day timeline with tappable blocks and `+` areas for adding new time blocks.
+
+Tap a time block to edit it. In vertical grid view, tap a `+` area to add a block near that time. Desktop drag-and-drop still works best on a computer or tablet.
 
 ## Course visibility
 

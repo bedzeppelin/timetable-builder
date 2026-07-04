@@ -1,68 +1,40 @@
-# Simple Sync Setup
+# No-backend Schedule Transfer
 
-Timetable Studio can sync a schedule between a phone and computer using a short sync code.
+Timetable Studio can move a schedule between a phone and computer without Supabase, login, or any database setup.
 
-This is intentionally simple. There are no user accounts yet. Anyone with the sync code or link can load and overwrite that synced schedule.
+This is not live cloud sync. It is a one-time transfer link.
 
 ## How it works
 
-1. A user clicks `Sync schedule`.
-2. They click `Save to cloud`.
-3. The app receives a code like `ABCD-1234`.
-4. On another device, they open the app, click `Sync schedule`, enter the code, and click `Load from code`.
-5. They can also copy a sync link and open it on another device.
+1. On your computer, click `Transfer schedule`.
+2. Click `Copy transfer link`.
+3. Send/open that link on your phone.
+4. The app opens a transfer modal.
+5. Tap `Import pasted link`.
 
-## Required Supabase setup
-
-Create a Supabase project, then run the SQL in `supabase-sync-table.sql` from the Supabase SQL Editor.
-
-The table name defaults to:
+The schedule data is stored inside the link hash after:
 
 ```text
-public.timetable_sync
+#ts-transfer=
 ```
 
-## Required Vercel environment variables
+Because the data is inside the link itself, no server or database is needed.
 
-Add these in Vercel project settings:
+## What this does well
 
-```text
-SUPABASE_URL=your Supabase project URL
-SUPABASE_SERVICE_ROLE_KEY=your Supabase service role key
-```
+- Moves a schedule from laptop to phone.
+- Moves a schedule from phone to laptop.
+- Works without accounts.
+- Works without Supabase.
+- Keeps the app fully static except for the existing screenshot extractor API.
 
-Optional:
+## Limitations
 
-```text
-SYNC_TABLE=timetable_sync
-```
+- It is not automatic live sync.
+- If you edit the schedule on your laptop, you need to copy a new transfer link to update your phone.
+- Large schedules create long links. If a link is too long for your messaging app/browser, use `Download JSON backup` and import the JSON on the other device.
+- Anyone with the transfer link can import that schedule.
 
-After adding the environment variables, redeploy the Vercel project.
+## Future cloud sync
 
-## Security note
-
-The service role key must only be used server-side. This implementation keeps it inside the Vercel API route and never exposes it to browser JavaScript.
-
-The sync code itself is the access key for a schedule. Treat it like a share link.
-
-## User-facing controls
-
-The app adds a `Sync schedule` button under `Import / export`.
-
-The modal includes:
-
-- Save to cloud
-- Load from code
-- Refresh from cloud
-- Copy link
-- Clear code
-
-## Current limitations
-
-- No login/accounts.
-- No per-user private library.
-- No automatic background sync.
-- Last save wins if two devices save to the same code.
-- Anyone with the code can load or overwrite that synced schedule.
-
-This keeps the feature lightweight for now, while leaving room for account-based sync later.
+Real live sync would still need a backend storage service, such as Supabase, Firebase, Vercel KV, or another database. This transfer-link version avoids that setup for now.

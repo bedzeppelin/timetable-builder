@@ -1,4 +1,4 @@
-const crypto = require("crypto");
+import crypto from "crypto";
 
 const TABLE = process.env.SYNC_TABLE || "timetable_sync";
 const MAX_PAYLOAD_BYTES = 1024 * 1024;
@@ -126,7 +126,7 @@ async function saveSchedule({code, data, label}){
   return Array.isArray(rows) && rows[0] ? rows[0] : {sync_code:syncCode, updated_at:now};
 }
 
-module.exports = async function handler(req, res){
+export default async function handler(req, res){
   if(req.method === "GET"){
     try{
       const row = await loadSchedule(req.query.code);
@@ -157,4 +157,4 @@ module.exports = async function handler(req, res){
   }catch(error){
     return send(res, error.status || 500, {ok:false, error:error.message, details:error.details});
   }
-};
+}

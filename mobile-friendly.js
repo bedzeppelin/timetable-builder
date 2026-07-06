@@ -260,6 +260,7 @@
   renderMobileSchedule();
   loadAddonScript("simple-sync.js", "simple-sync");
   loadAddonScript("import-export-polish.js", "import-export-polish");
+  loadAddonScript("sync-diagnostics.js", "sync-diagnostics");
 
   window.addEventListener("resize", () => {
     if(isMobile()) renderMobileSchedule();

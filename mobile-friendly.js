@@ -247,18 +247,20 @@
     };
   }
 
-  function loadSimpleSyncScript(){
-    if(document.querySelector('script[data-simple-sync="true"]')) return;
+  function loadAddonScript(src, marker){
+    if(document.querySelector(`script[data-addon="${marker}"]`)) return;
     const script = document.createElement("script");
-    script.src = "simple-sync.js";
-    script.dataset.simpleSync = "true";
+    script.src = src;
+    script.dataset.addon = marker;
     document.body.appendChild(script);
   }
 
   ensureMobileShell();
   installMobileRenderHook();
   renderMobileSchedule();
-  loadSimpleSyncScript();
+  loadAddonScript("simple-sync.js", "simple-sync");
+  loadAddonScript("import-export-polish.js", "import-export-polish");
+  loadAddonScript("sync-diagnostics.js", "sync-diagnostics");
 
   window.addEventListener("resize", () => {
     if(isMobile()) renderMobileSchedule();

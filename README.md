@@ -19,6 +19,7 @@ Open the app here: https://timetable-builder-ashen.vercel.app/
 - Generate preset schedules using the number of courses you plan to take.
 - Explore different course combinations when you are still deciding what to take.
 - Use mobile-friendly agenda and vertical grid views on phones.
+- Sync schedules between devices with a Supabase-backed sync code.
 - Export your final schedule as JSON or ICS.
 - Import GPT-generated JSON from course screenshots.
 - Upload screenshots directly with the GPT extractor.
@@ -36,6 +37,24 @@ Mobile includes two schedule views:
 - **Grid**: a vertical day-by-day timeline with tappable blocks and `+` areas for adding new time blocks.
 
 Tap a time block to edit it. In vertical grid view, tap a `+` area to add a block near that time. Desktop drag-and-drop still works best on a computer or tablet.
+
+## Live sync
+
+Timetable Studio can use Supabase to sync schedules between devices with a short sync code.
+
+The user flow is:
+
+1. Open `Import / export`.
+2. Click `Sync schedule`.
+3. Click `Save / create code`.
+4. Use the code or copied link on another device.
+5. Turn on `Auto-sync this device` on both devices.
+
+With auto-sync on, this device saves changes after edits and checks for updates about every 15 seconds.
+
+Setup instructions are in `SYNC_SETUP.md`.
+
+Security note: simple sync is code-based. Anyone with the code or link can load and overwrite that synced schedule.
 
 ## Course visibility
 

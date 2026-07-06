@@ -247,9 +247,18 @@
     };
   }
 
+  function loadSimpleSyncScript(){
+    if(document.querySelector('script[data-simple-sync="true"]')) return;
+    const script = document.createElement("script");
+    script.src = "simple-sync.js";
+    script.dataset.simpleSync = "true";
+    document.body.appendChild(script);
+  }
+
   ensureMobileShell();
   installMobileRenderHook();
   renderMobileSchedule();
+  loadSimpleSyncScript();
 
   window.addEventListener("resize", () => {
     if(isMobile()) renderMobileSchedule();
